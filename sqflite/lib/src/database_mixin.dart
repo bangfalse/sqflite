@@ -514,6 +514,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     final bool singleInstance = options?.singleInstance ?? false;
     // Single instance?
     params[paramSingleInstance] = singleInstance;
+    params[paramCursorWindowSize] = options?.cursorWindowSize ?? -1;
 
     // Version up to 1.1.5 returns an int
     // Now it returns some database information

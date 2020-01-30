@@ -282,7 +282,8 @@ abstract class OpenDatabaseOptions {
       OnDatabaseVersionChangeFn onDowngrade,
       OnDatabaseOpenFn onOpen,
       bool readOnly = false,
-      bool singleInstance = true}) {
+      bool singleInstance = true,
+      int cursorWindowSize}) {
     return impl.SqfliteOpenDatabaseOptions(
         version: version,
         onConfigure: onConfigure,
@@ -291,7 +292,8 @@ abstract class OpenDatabaseOptions {
         onDowngrade: onDowngrade,
         onOpen: onOpen,
         readOnly: readOnly,
-        singleInstance: singleInstance);
+        singleInstance: singleInstance,
+        cursorWindowSize: cursorWindowSize);
   }
 
   /// Specify the expected version.
@@ -319,6 +321,9 @@ abstract class OpenDatabaseOptions {
 
   /// The existing single-instance (hot-restart)
   bool singleInstance;
+
+  /// The cursor window size to use on Android (in bytes). Unsupported on API < 28.
+  int cursorWindowSize;
 }
 
 ///

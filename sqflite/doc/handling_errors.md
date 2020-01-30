@@ -141,9 +141,6 @@ In the last example above, there is a short race condition between _insert and _
 
 ### SQLiteBlobTooBigException (Row too big to fit into CursorWindow)
 
-There seems to be a limit of (around) 1MB when reading on Android and iOS. I could not find a portable way to allow the developer to change
-this limit.
+On Android, there is a limit of 2MB for the entire cursor read operation on any query. This limitation can be worked around in versions of Android >= API level 28. Sqflite supports this by specifying the window size in the `cursorWindowSize` parameter to `openDatabase()`. If specifying `cursorWindowSize`, you should increase the `minSdkVersion` in your app's build.gradle file to `28` or higher.
 
-I find the 1MB blob limit a good limitation (firestore has a similar limit) since otherwise performance would be pretty bad.
-
-Solution: reduce the size of your blob or store your data in a external file and only save a reference to it in SQLite.
+If you need to support large files on a version of Android before Android 9 (API level 28), you should reduce the size of your blob or store your data in an external file and only save a reference to it in SQLite.

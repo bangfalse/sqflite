@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
@@ -48,6 +49,7 @@ import static com.tekartik.sqflite.Constant.METHOD_OPTIONS;
 import static com.tekartik.sqflite.Constant.METHOD_QUERY;
 import static com.tekartik.sqflite.Constant.METHOD_UPDATE;
 import static com.tekartik.sqflite.Constant.PARAM_CMD;
+import static com.tekartik.sqflite.Constant.PARAM_CURSOR_WINDOW_SIZE;
 import static com.tekartik.sqflite.Constant.PARAM_ID;
 import static com.tekartik.sqflite.Constant.PARAM_IN_TRANSACTION;
 import static com.tekartik.sqflite.Constant.PARAM_LOG_LEVEL;
@@ -687,6 +689,11 @@ public class SqflitePlugin implements MethodCallHandler {
         final boolean inMemory = isInMemoryPath(path);
 
         final boolean singleInstance = !Boolean.FALSE.equals(call.argument(PARAM_SINGLE_INSTANCE)) && !inMemory;
+        final int cursorWindowSize = call.argument(PARAM_CURSOR_WINDOW_SIZE);
+
+        if (cursorWindowSize > 0 && Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            throw new IllegalArgumentException("Cursor window size can only be customized on Android SDK version " + Build.VERSION_CODES.P + " or higher.");
+        }
 
         // For single instance we create or reuse a thread right away
         // DO NOT TRY TO LOAD existing instance, the database has been closed
@@ -725,7 +732,7 @@ public class SqflitePlugin implements MethodCallHandler {
         }
         final int databaseId = newDatabaseId;
 
-        final Database database = new Database(path, databaseId, singleInstance, logLevel);
+        final Database database = new Database(path, databaseId, singleInstance, cursorWindowSize, logLevel);
 
         final BgResult bgResult = new BgResult(result);
 

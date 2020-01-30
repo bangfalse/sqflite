@@ -101,6 +101,9 @@ const String paramReadOnly = 'readOnly';
 /// True if opened as a single instance (bool)
 const String paramSingleInstance = 'singleInstance';
 
+/// The cursort window size to use (int) or -1 if not set;
+const String paramCursorWindowSize = 'cursorWindowSize';
+
 /// SQL query (insert/execute/update/select).
 ///
 /// String.

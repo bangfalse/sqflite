@@ -15,6 +15,7 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
     this.onOpen,
     this.readOnly = false,
     this.singleInstance = true,
+    this.cursorWindowSize
   }) {
     readOnly ??= false;
     singleInstance ??= true;
@@ -35,6 +36,8 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
   bool readOnly;
   @override
   bool singleInstance;
+  @override
+  int cursorWindowSize;
 
   @override
   String toString() {

@@ -133,6 +133,15 @@ class Sqflite {
 /// same path will return the same instance, and will discard all other
 /// parameters such as callbacks for that invocation.
 ///
+/// [cursorWindowSize] is an Android-only option that changes the maximum size
+/// of the cursor window used to retrieve results. It is specified in bytes.
+/// Without this option, the window size defaults to 2MB on most Android
+/// devices. Increasing this can be useful if storing large blobs in the
+/// database. If [cursorWindowSize] is specified, your Android app must have
+/// minSdkVersion set to 28 or higher. Calling [openDatabase] with
+/// [cursorWindowSize] set to a positive integer on older versions of Android
+/// will throw an exception.
+///
 Future<Database> openDatabase(String path,
     {int version,
     OnDatabaseConfigureFn onConfigure,
@@ -141,7 +150,8 @@ Future<Database> openDatabase(String path,
     OnDatabaseVersionChangeFn onDowngrade,
     OnDatabaseOpenFn onOpen,
     bool readOnly = false,
-    bool singleInstance = true}) {
+    bool singleInstance = true,
+    int cursorWindowSize}) {
   final OpenDatabaseOptions options = OpenDatabaseOptions(
       version: version,
       onConfigure: onConfigure,
@@ -150,7 +160,8 @@ Future<Database> openDatabase(String path,
       onDowngrade: onDowngrade,
       onOpen: onOpen,
       readOnly: readOnly,
-      singleInstance: singleInstance);
+      singleInstance: singleInstance,
+      cursorWindowSize: cursorWindowSize);
   return databaseFactory.openDatabase(path, options: options);
 }
 
