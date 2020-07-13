@@ -13,9 +13,7 @@ dependencies:
   flutter:
     sdk: flutter
   sqflite:
-    git:
-      url: git://github.com/tekartik/sqflite
-      path: sqflite
+    path: ..
 
 
 dev_dependencies:
