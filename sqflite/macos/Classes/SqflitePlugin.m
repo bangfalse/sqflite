@@ -1,5 +1,7 @@
 #import "SqflitePlugin.h"
-#import <FMDB/FMDB.h>
+
+#import <fmdb/FMDB.h>
+
 #import <sqlite3.h>
 #import "SqfliteOperation.h"
 
@@ -152,37 +154,29 @@ static NSInteger _databaseOpenCount = 0;
     return database;
 }
 
-- (BOOL)handleError:(FMDatabase*)db result:(FlutterResult)result {
+- (void)handleError:(FMDatabase*)db result:(FlutterResult)result {
     // handle error
-    if ([db hadError]) {
-        result([FlutterError errorWithCode:_sqliteErrorCode
-                                   message:[NSString stringWithFormat:@"%@", [db lastError]]
-                                   details:nil]);
-        return YES;
-    }
-    return NO;
+    result([FlutterError errorWithCode:_sqliteErrorCode
+                               message:[NSString stringWithFormat:@"%@", [db lastError]]
+                               details:nil]);
 }
 
-- (BOOL)handleError:(FMDatabase*)db operation:(SqfliteOperation*)operation {
-    // handle error
-    if ([db hadError]) {
-        NSMutableDictionary* details = nil;
-        NSString* sql = [operation getSql];
-        if (sql != nil) {
-            details = [NSMutableDictionary new];
-            [details setObject:sql forKey:SqfliteParamSql];
-            NSArray* sqlArguments = [operation getSqlArguments];
-            if (sqlArguments != nil) {
-                [details setObject:sqlArguments forKey:SqfliteParamSqlArguments];
-            }
+- (void)handleError:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+    NSMutableDictionary* details = nil;
+    NSString* sql = [operation getSql];
+    if (sql != nil) {
+        details = [NSMutableDictionary new];
+        [details setObject:sql forKey:SqfliteParamSql];
+        NSArray* sqlArguments = [operation getSqlArguments];
+        if (sqlArguments != nil) {
+            [details setObject:sqlArguments forKey:SqfliteParamSqlArguments];
         }
-        
-        [operation error:([FlutterError errorWithCode:_sqliteErrorCode
-                                              message:[NSString stringWithFormat:@"%@", [db lastError]]
-                                              details:details])];
-        return YES;
     }
-    return NO;
+    
+    [operation error:([FlutterError errorWithCode:_sqliteErrorCode
+                                          message:[NSString stringWithFormat:@"%@", [db lastError]]
+                                          details:details])];
+    
 }
 
 + (NSObject*)toSqlValue:(NSObject*)value {
@@ -253,14 +247,16 @@ static NSInteger _databaseOpenCount = 0;
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
     }
     
+    BOOL success;
     if (!argumentsEmpty) {
-        [db executeUpdate: sql withArgumentsInArray: sqlArguments];
+        success = [db executeUpdate: sql withArgumentsInArray: sqlArguments];
     } else {
-        [db executeUpdate: sql];
+        success = [db executeUpdate: sql];
     }
     
     // handle error
-    if ([self handleError:db result:result]) {
+    if (!success) {
+        [self handleError:db result:result];
         return false;
     }
     
@@ -276,10 +272,11 @@ static NSInteger _databaseOpenCount = 0;
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
     }
     
+    BOOL success;
     if (!argumentsEmpty) {
-        [db executeUpdate: sql withArgumentsInArray: sqlArguments];
+        success = [db executeUpdate: sql withArgumentsInArray: sqlArguments];
     } else {
-        [db executeUpdate: sql];
+        success = [db executeUpdate: sql];
     }
     
     // If wanted, we leave the transaction even if it fails
@@ -290,7 +287,8 @@ static NSInteger _databaseOpenCount = 0;
     }
     
     // handle error
-    if ([self handleError:db operation:operation]) {
+    if (!success) {
+        [self handleError:db operation:operation];
         return false;
     }
     
@@ -323,7 +321,8 @@ static NSInteger _databaseOpenCount = 0;
     }
     
     // handle error
-    if ([self handleError:db operation:operation]) {
+    if ([db hadError]) {
+        [self handleError:db operation:operation];
         return false;
     }
     
@@ -639,6 +638,14 @@ static NSInteger _databaseOpenCount = 0;
         return;
     }
     
+    // First call will be to prepare the database.
+    // We turn on extended result code, allowing failure
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [queue inDatabase:^(FMDatabase *db) {
+            sqlite3_extended_result_codes(db.sqliteHandle, 1);
+        }];
+    });
+    
     NSNumber* databaseId;
     @synchronized (self.mapLock) {
         SqfliteDatabase* database = [SqfliteDatabase new];
@@ -659,7 +666,6 @@ static NSInteger _databaseOpenCount = 0;
                 NSLog(@"Creating operation queue");
             }
         }
-        
     }
     
     result([SqflitePlugin makeOpenResult: databaseId recovered:false recoveredInTransaction:false]);

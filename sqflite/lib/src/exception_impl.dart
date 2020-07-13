@@ -1,11 +1,10 @@
 import 'package:sqflite/src/services_impl.dart';
-import 'package:sqflite/src/constant.dart';
-import 'package:sqflite/src/exception.dart';
+import 'package:sqflite/src/sqflite_import.dart';
 
 /// Wrap any exception to a [DatabastException]
 Future<T> wrapDatabaseException<T>(Future<T> Function() action) async {
   try {
-    final T result = await action();
+    final result = await action();
     return result;
   } on PlatformException catch (e) {
     if (e.code == sqliteErrorCode) {

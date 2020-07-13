@@ -95,6 +95,21 @@ of values. This does not work. Instead you should list each argument one by one:
 var list = await db.rawQuery('SELECT * FROM my_table WHERE name IN (?, ?, ?)', ['cat', 'dog', 'fish']);
 ```
 
+### Parameter position
+
+You can use `?NNN` to specify a parameter position:
+
+```dart
+expect(
+  await db.rawQuery(
+    'SELECT ?1 as item1, ?2 as item2, ?1 + ?2 as sum', [3, 4]),
+    [{'item1': 3, 'item2': 4, 'sum': 7}]);
+```
+
+Be aware that Android binds argument as String. While it works in most cases (in where args), in the example above, the result
+ will be `[{'item1': '3', 'item2': '4', 'sum': 7}]);`. We might consider inlining num in the future.
+
+
 ## NULL value
 
 `NULL` is a special value. When testing for null in a query you should not do `'WHERE my_col = ?', [null]` but use 
@@ -102,4 +117,49 @@ instead `WHERE my_col IS NULL`.
 
 ```dart
 var list = await db.query('my_table', columns: ['name'], where: 'type IS NULL');
+```
+
+# Examples
+
+## Using `LIKE`
+
+Look for items with `name` starting with 'Ta':
+
+```dart
+var list = await db.query('my_table', columns: ['name'], where: 'name LIKE ?', whereArgs: ['Ta%']);
+```
+
+Look for items with `name` containing with 'free':
+
+```dart
+var list = await db.query('my_table', columns: ['name'], where: 'name LIKE ?', whereArgs: ['%free%']);
+```
+
+## SQLite schema information
+
+SQLite has a [`sqlite_master`](https://www.sqlite.org/faq.html#q7) table that store schema information:
+
+### Check if a table exists
+
+```dart
+Future<bool> tableExists(DatabaseExecutor db, String table) async {
+  var count = firstIntValue(await db.query('sqlite_master',
+      columns: ['COUNT(*)'],
+      where: 'type = ? AND name = ?',
+      whereArgs: ['table', table]));
+  return count > 0;
+}
+```
+
+### List table names
+
+```dart
+Future<List<String>> getTableNames(DatabaseExecutor db) async {
+  var tableNames = (await db
+          .query('sqlite_master', where: 'type = ?', whereArgs: ['table']))
+      .map((row) => row['name'] as String)
+      .toList(growable: false)
+        ..sort();
+  return tableNames;
+}
 ```

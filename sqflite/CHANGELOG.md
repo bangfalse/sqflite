@@ -1,3 +1,17 @@
+## 1.3.1
+
+* add `databaseFactory` setter to change the default sqflite factory.
+
+## 1.3.0+2
+
+* Add sqflite_common dependency
+
+## 1.2.2+1
+
+* Fix iOS warning on FMDB import
+* Support pedantic 1.9
+* Check arguments in debug mode (print errors only)
+
 ## 1.2.1
 
 * Support Android embedding v2

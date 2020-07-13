@@ -12,6 +12,10 @@ Supports iOS, Android and MacOS.
 * Helpers for insert/query/update/delete queries
 * DB operation executed in a background thread on iOS and Android
 
+Other platforms support:
+* Linux/Windows/DartVM support using [sqflite_common_ffi](https://pub.dev/packages/sqflite_common_ffi)
+* Web [is not supported](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/troubleshooting.md#error-in-flutter-web).
+
 ## Getting Started
 
 In your flutter project add the dependency:
@@ -19,7 +23,7 @@ In your flutter project add the dependency:
 ```yml
 dependencies:
   ...
-  sqflite: ^1.2.1
+  sqflite: ^1.3.0
 ```
 
 For help getting started with Flutter, view the online
@@ -341,7 +345,6 @@ More information on supported types [here](https://github.com/tekartik/sqflite/b
 ### BLOB
 
 * Dart type: `Uint8List`
-* Dart type `List<int>` is supported but not recommended (slow conversion)
 
 ## Current issues
 
