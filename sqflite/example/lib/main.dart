@@ -140,7 +140,7 @@ String _debugAutoStartRouteName;
 String get debugAutoStartRouteName => _debugAutoStartRouteName;
 
 /// Deprecated to avoid calls
-@deprecated
+//@deprecated
 set debugAutoStartRouteName(String routeName) =>
     _debugAutoStartRouteName = routeName;
 
